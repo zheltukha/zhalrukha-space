@@ -412,6 +412,7 @@ main.wrap,nav.tabbar{max-width:none;padding-left:max(24px,env(safe-area-inset-le
 #view-projects .cell-name{min-width:150px}
 #view-projects th,#view-projects td{padding-left:10px;padding-right:10px}
 #view-projects table{min-width:1100px}
+.kindsw[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -487,7 +488,7 @@ main.wrap,nav.tabbar{max-width:none;padding-left:max(24px,env(safe-area-inset-le
     <input id="paySearch" type="search" placeholder="Поиск по проекту">
     <button class="btn solid addbtn wide" id="addPayBtn" type="button">+ Новая выплата</button>
   </div>
-  <p class="hint">Когда ожидаемый платёж пришёл, нажмите «Получено» — он сам уйдёт в текущий месяц. Месяц разворачивается нажатием.</p>
+  <p class="hint">Когда ожидаемый платёж пришёл, нажмите «Получено ✓» — он сам встанет в свой месяц (или в текущий, если месяц не указан). Месяц разворачивается нажатием.</p>
   <div class="note" id="payNote" hidden></div>
   <section class="expect" id="expect">
     <div class="ehead"><h3>Ожидаемые платежи</h3><span class="etotal" id="expTotal"></span></div>
@@ -536,7 +537,7 @@ main.wrap,nav.tabbar{max-width:none;padding-left:max(24px,env(safe-area-inset-le
 <div class="overlay" id="payOverlay" hidden>
   <form class="sheet" id="payForm" autocomplete="off">
     <h2 id="payTitle">Новая выплата</h2>
-    <div class="kindsw" role="radiogroup" aria-label="Тип записи">
+    <div class="kindsw" role="radiogroup" aria-label="Тип записи" hidden>
       <label><input type="radio" name="ptype" id="pt-got" value="got" checked><span>Получено</span></label>
       <label><input type="radio" name="ptype" id="pt-exp" value="exp"><span>Ожидается</span></label>
     </div>
@@ -814,7 +815,7 @@ function renderExpected(){
     <button type="button" class="gotbtn" data-got="${id}">Получено ✓</button></div>`}).join("")}</div>`:`<p class="eempty">Сейчас ничего не ждём.</p>`;
 }
 $("expect").addEventListener("click",e=>{
-  const g=e.target.closest("[data-got]"); if(g){const k=curMonth();openMonths.add(k);patchPay(g.dataset.got,{expected:false,month:k});return}
+  const g=e.target.closest("[data-got]"); if(g){const ep=pays.find(x=>x.id===g.dataset.got)||{};const k=ep.month||curMonth();openMonths.add(k);patchPay(g.dataset.got,{expected:false,month:k});return}
   const ed=e.target.closest("[data-payedit]"); if(ed){openPay(ed.dataset.payedit);return}
   if(e.target.closest("#addExpected"))openPay(null,null,true);
 });
