@@ -542,8 +542,8 @@ main.wrap,nav.tabbar{max-width:none;padding-left:max(24px,env(safe-area-inset-le
       <label><input type="radio" name="ptype" id="pt-got" value="got" checked><span>Получено</span></label>
       <label><input type="radio" name="ptype" id="pt-exp" value="exp"><span>Ожидается</span></label>
     </div>
-    <div class="field"><label for="p-name">Проект</label><input id="p-name" list="p-projects" required placeholder="например, ЖК «Хайт»"><datalist id="p-projects"></datalist></div>
     <div class="field"><label for="p-kind">Вид оплаты</label><select id="p-kind"></select></div>
+    <div class="field"><label for="p-name" id="p-name-lab">Проект</label><input id="p-name" list="p-projects" required placeholder="выберите номер проекта"><datalist id="p-projects"></datalist></div>
     <div class="row2">
       <div class="field"><label for="p-amount">Сумма, ₽</label><input id="p-amount" inputmode="decimal" placeholder="например, 45 000"></div>
       <div class="field"><label for="p-month" id="p-month-lab">Месяц</label><input id="p-month" type="month"></div>
@@ -820,7 +820,8 @@ $("expect").addEventListener("click",e=>{
   const ed=e.target.closest("[data-payedit]"); if(ed){openPay(ed.dataset.payedit);return}
   if(e.target.closest("#addExpected"))openPay(null,null,true);
 });
-function syncKind(){const sal=$("p-kind").value==="Оклад";const f=$("p-name").closest(".field");f.hidden=sal;$("p-name").required=!sal;if(sal&&$("p-name").value==="Оклад")$("p-name").value="";}
+let payPN=[],payOther=[];
+function syncKind(){const k=$("p-kind").value,sal=k==="Оклад",oth=k==="Другое",exp=$("pt-exp").checked,inp=$("p-name");inp.closest(".field").hidden=sal;inp.required=!sal&&!oth;if(sal&&inp.value==="Оклад")inp.value="";if(oth&&inp.value==="Другое")inp.value="";$("p-name-lab").textContent=oth?"Что за оплата":"Проект";inp.placeholder=oth?"например, долг Артёма (можно оставить пустым)":"выберите номер проекта";const list=oth?payOther:(exp?[...payPN,...payOther]:payPN);$("p-projects").innerHTML=list.map(n=>`<option value="${esc(n)}"></option>`).join("");}
 $("p-kind").addEventListener("change",syncKind);
 function syncType(){const exp=$("pt-exp").checked;$("p-month-lab").textContent=exp?"Когда ожидается":"Месяц"}
 document.querySelectorAll('input[name="ptype"]').forEach(r=>r.addEventListener("change",syncType));
@@ -845,8 +846,7 @@ function openPay(id,presetMonth,asExpected){
   const pn=rows.map(projLabel).filter(Boolean).sort((a,b)=>a.localeCompare(b,"ru",{numeric:true}));
   const nums=new Set(rows.map(x=>String(x.num||"").trim().toLowerCase()).filter(Boolean));
   const other=pays.map(x=>x.name).filter(n=>n&&n!=="Оклад"&&!addr.has(n)&&!pn.includes(n)&&!nums.has(n.trim().toLowerCase())).sort((a,b)=>a.localeCompare(b,"ru"));
-  const names=[...new Set([...pn,...other])];
-  $("p-projects").innerHTML=names.map(n=>`<option value="${esc(n)}"></option>`).join("");
+  payPN=pn; payOther=[...new Set(other)];
   $("p-name").value=p.name||(p.num?"№ "+p.num:"");
   $("p-kind").value=kindOf(p)||KINDS[0];
   $("p-amount").value=p.amount?new Intl.NumberFormat("ru-RU").format(num(p.amount)):"";
@@ -870,7 +870,7 @@ $("payDelWrap").addEventListener("click",async e=>{
 $("payForm").addEventListener("submit",async e=>{
   e.preventDefault();
   const isSal=$("p-kind").value==="Оклад";
-  const name=isSal?"Оклад":$("p-name").value.trim();
+  const name=isSal?"Оклад":($("p-name").value.trim()||($("p-kind").value==="Другое"?"Другое":""));
   if(!name){$("p-name").focus();return}
   const r=rows.find(x=>projLabel(x)===name);
   const expected=$("pt-exp").checked;
