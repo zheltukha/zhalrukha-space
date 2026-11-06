@@ -752,7 +752,7 @@ document.querySelector(".seg").addEventListener("click",e=>{const b=e.target.clo
 window.addEventListener("hashchange",()=>setView(viewFromHash()));
 
 /* ---------- payroll ---------- */
-const KINDS=["1 этап","2 этап — 50%","2 этап — акт","3 этап","Авторский надзор","Маржа стройка","Маржа комплектация"];
+const KINDS=["1 этап","2 этап — 50%","2 этап — акт","3 этап","Авторский надзор","Маржа стройка","Маржа комплектация","Оклад","Другое"];
 const OLD_KIND={"1 этап (акт)":"1 этап","50% 2 этапа":"2 этап — 50%","2 этап (акт)":"2 этап — акт"};
 let pays=[], colPay=null, payEditing=null;
 const rub=n=>new Intl.NumberFormat("ru-RU").format(Math.round(n||0))+" ₽";
