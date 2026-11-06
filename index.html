@@ -413,6 +413,7 @@ main.wrap,nav.tabbar{max-width:none;padding-left:max(24px,env(safe-area-inset-le
 #view-projects th,#view-projects td{padding-left:10px;padding-right:10px}
 #view-projects table{min-width:1100px}
 .kindsw[hidden]{display:none!important}
+.field[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -819,6 +820,8 @@ $("expect").addEventListener("click",e=>{
   const ed=e.target.closest("[data-payedit]"); if(ed){openPay(ed.dataset.payedit);return}
   if(e.target.closest("#addExpected"))openPay(null,null,true);
 });
+function syncKind(){const sal=$("p-kind").value==="Оклад";const f=$("p-name").closest(".field");f.hidden=sal;$("p-name").required=!sal;if(sal&&$("p-name").value==="Оклад")$("p-name").value="";}
+$("p-kind").addEventListener("change",syncKind);
 function syncType(){const exp=$("pt-exp").checked;$("p-month-lab").textContent=exp?"Когда ожидается":"Месяц"}
 document.querySelectorAll('input[name="ptype"]').forEach(r=>r.addEventListener("change",syncType));
 
@@ -840,14 +843,15 @@ function openPay(id,presetMonth,asExpected){
   $("payTitle").textContent=id?"Запись":(asExpected?"Ожидаемый платёж":"Новая выплата");
   const addr=new Set(rows.flatMap(x=>[x.object,x.client]).filter(Boolean));
   const pn=rows.map(projLabel).filter(Boolean).sort((a,b)=>a.localeCompare(b,"ru",{numeric:true}));
-  const other=pays.map(x=>x.name).filter(n=>n&&!addr.has(n)&&!pn.includes(n)).sort((a,b)=>a.localeCompare(b,"ru"));
+  const nums=new Set(rows.map(x=>String(x.num||"").trim().toLowerCase()).filter(Boolean));
+  const other=pays.map(x=>x.name).filter(n=>n&&n!=="Оклад"&&!addr.has(n)&&!pn.includes(n)&&!nums.has(n.trim().toLowerCase())).sort((a,b)=>a.localeCompare(b,"ru"));
   const names=[...new Set([...pn,...other])];
   $("p-projects").innerHTML=names.map(n=>`<option value="${esc(n)}"></option>`).join("");
   $("p-name").value=p.name||(p.num?"№ "+p.num:"");
   $("p-kind").value=kindOf(p)||KINDS[0];
   $("p-amount").value=p.amount?new Intl.NumberFormat("ru-RU").format(num(p.amount)):"";
   const exp=id?!!p.expected:!!asExpected;
-  $("pt-exp").checked=exp; $("pt-got").checked=!exp; syncType();
+  $("pt-exp").checked=exp; $("pt-got").checked=!exp; syncType(); syncKind();
   $("p-month").value=id?(p.expected?(p.month||""):monthOf(p)):(exp?"":(presetMonth||curMonth()));
   $("p-comment").value=p.comment||"";
   $("payDelWrap").innerHTML=id?`<button type="button" class="btn danger" id="payDel">Удалить</button>`:"";
@@ -865,7 +869,8 @@ $("payDelWrap").addEventListener("click",async e=>{
 });
 $("payForm").addEventListener("submit",async e=>{
   e.preventDefault();
-  const name=$("p-name").value.trim();
+  const isSal=$("p-kind").value==="Оклад";
+  const name=isSal?"Оклад":$("p-name").value.trim();
   if(!name){$("p-name").focus();return}
   const r=rows.find(x=>projLabel(x)===name);
   const expected=$("pt-exp").checked;
