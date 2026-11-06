@@ -396,6 +396,22 @@ tr.done .noteinp:hover,tr.done .noteinp:focus{background:#D3DCE3}
 .scroller{max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain}
 .scroller thead th{position:sticky;top:0;z-index:2;background:var(--paper);box-shadow:inset 0 -1px 0 var(--hair)}
 .scroller thead th.sticky{left:0;z-index:3}
+/* table area uses the full screen width */
+main.wrap,nav.tabbar{max-width:none;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px))}
+#view-projects table{min-width:1180px}
+@media (min-width:1500px){#view-projects .noteinp{min-width:260px}}
+
+/* compact columns so the whole table fits on laptop screens */
+#view-projects .chip{white-space:normal;text-align:left;max-width:150px;line-height:1.25}
+#view-projects .team{min-width:0}
+#view-projects .team div{white-space:nowrap}
+#view-projects .team{min-width:200px}
+#view-projects .team span{min-width:114px}
+#view-projects .noteinp{min-width:110px}
+#view-projects .dls{min-width:0}
+#view-projects .cell-name{min-width:150px}
+#view-projects th,#view-projects td{padding-left:10px;padding-right:10px}
+#view-projects table{min-width:1100px}
 </style>
 </head>
 <body>
