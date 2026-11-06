@@ -794,7 +794,7 @@ function renderPay(){
       <span class="mtotal">${rub(sum(items))}</span></button></td></tr>`;
     if(!open)return head;
     const body=items.length?items.map(p=>{const id=esc(p.id);return `<tr class="prow">
-      <td class="sticky"><button type="button" class="cell-name" data-payedit="${id}" title="Изменить запись"><span class="pt">${esc(pName(p))}</span>${p.name&&p.num?`<span class="pobj">№ ${esc(p.num)}</span>`:""}</button></td>
+      <td class="sticky"><button type="button" class="cell-name" data-payedit="${id}" title="Изменить запись"><span class="pt">${esc(pName(p))}</span>${p.name&&p.num&&p.name!=="№ "+p.num?`<span class="pobj">№ ${esc(p.num)}</span>`:""}</button></td>
       <td class="kind">${esc(kindOf(p))}</td>
       <td class="r money">${p.amount?rub(num(p.amount)):"—"}</td>
       <td class="pc">${esc(p.comment||"")}</td></tr>`}).join(""):"";
@@ -832,12 +832,15 @@ $("payBody").addEventListener("click",e=>{
   const am=e.target.closest("[data-addmonth]"); if(am){openPay(null,am.dataset.addmonth);return}
   const ed=e.target.closest("[data-payedit]"); if(ed)openPay(ed.dataset.payedit);
 });
-function projLabel(r){return r.object||r.client||""}
+function projLabel(r){return r.num?"№ "+r.num:(r.object||r.client||"")}
 function openPay(id,presetMonth,asExpected){
   payEditing=id||null;
   const p=id?pays.find(x=>x.id===id)||{}:{};
   $("payTitle").textContent=id?"Запись":(asExpected?"Ожидаемый платёж":"Новая выплата");
-  const names=[...new Set([...rows.map(projLabel),...pays.map(x=>x.name)].filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ru"));
+  const addr=new Set(rows.flatMap(x=>[x.object,x.client]).filter(Boolean));
+  const pn=rows.map(projLabel).filter(Boolean).sort((a,b)=>a.localeCompare(b,"ru",{numeric:true}));
+  const other=pays.map(x=>x.name).filter(n=>n&&!addr.has(n)&&!pn.includes(n)).sort((a,b)=>a.localeCompare(b,"ru"));
+  const names=[...new Set([...pn,...other])];
   $("p-projects").innerHTML=names.map(n=>`<option value="${esc(n)}"></option>`).join("");
   $("p-name").value=p.name||(p.num?"№ "+p.num:"");
   $("p-kind").value=kindOf(p)||KINDS[0];
